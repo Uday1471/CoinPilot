@@ -1,0 +1,164 @@
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+h1 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.filter-tabs {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.filter-tab {
+  padding: 10px 20px;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.filter-tab.active {
+  background: #4caf50;
+  color: white;
+}
+
+.filter-tab:hover {
+  background: #d0d0d0;
+}
+
+.filter-tab.active:hover {
+  background: #3e8e41;
+}
+
+#transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#transactions-table th,
+#transactions-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+#transactions-table th {
+  background-color: #4caf50;
+  color: white;
+  font-weight: 500;
+}
+
+#transactions-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.expense {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.income {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.negative {
+  color: #f44336;
+}
+
+.positive {
+  color: #4caf50;
+}
+
+.transaction-summary {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.transaction-summary div {
+  font-size: 16px;
+}
+
+.transaction-summary span:first-child {
+  color: #666;
+}
+
+.transaction-summary span:last-child {
+  font-weight: bold;
+  margin-left: 10px;
+  font-size: 18px;
+}
+
+.btn {
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.btn:hover {
+  background-color: #3e8e41;
+}
+
+#back-to-dashboard {
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+#logout-btn {
+  background-color: #f44336;
+}
+
+#logout-btn:hover {
+  background-color: #d32f2f;
+}
+
+.income {
+  color: green;
+}
+
+.expense {
+  color: red;
+}
