@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   console.log("Transaction Log loaded");
 
+  // Firebase should be initialized in firebase-config.js
   if (!firebase.apps.length) {
     console.error("Firebase not initialized - check firebase-config.js");
     return;
@@ -8,8 +9,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const auth = firebase.auth();
   const db = firebase.firestore();
-  let currentUser;
 
+  // DOM Elements
   const elements = {
     userName: document.getElementById("log-user-name"),
     logoutBtn: document.getElementById("logout-btn"),
@@ -20,32 +21,17 @@ document.addEventListener("DOMContentLoaded", function () {
     filterAll: document.getElementById("filter-all"),
     filterIncome: document.getElementById("filter-income"),
     filterExpense: document.getElementById("filter-expense"),
-    sortByAmount: document.createElement("button"),
-    sortByDate: document.createElement("button"),
   };
 
+  // Format currency
   const formatCurrency = (amount) => {
     return "$" + (amount || 0).toFixed(2);
   };
 
+  // Format date
   const formatDate = (timestamp) => {
     if (!timestamp) return "";
-
-    let date;
-
-    if (timestamp instanceof firebase.firestore.Timestamp) {
-      date = timestamp.toDate();
-    } else if (typeof timestamp === "object" && timestamp.seconds) {
-      date = new Date(timestamp.seconds * 1000);
-    } else {
-      try {
-        date = new Date(timestamp);
-      } catch (e) {
-        console.error("Error converting timestamp:", timestamp, e);
-        return "Invalid Date";
-      }
-    }
-
+    const date = timestamp.toDate();
     return (
       date.toLocaleDateString() +
       " " +
@@ -53,15 +39,8 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   };
 
-  let transactions = [];
-  let sortOrder = { amount: "none", date: "desc" };
-
+  // Load and render transactions with filtering
   const loadTransactions = async (userId, filterType = "all") => {
-    if (!userId) {
-      console.error("User ID is undefined. Cannot load transactions.");
-      return;
-    }
-
     try {
       let query = db
         .collection("users")
@@ -74,7 +53,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       const querySnapshot = await query.get();
-      transactions = [];
+
+      const transactions = [];
       let totalIncome = 0;
       let totalExpenses = 0;
 
@@ -82,10 +62,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const data = doc.data();
         transactions.push(data);
 
-        if (data.type === "income") {
+        // Summing based on the transaction type (positive for income, negative for expenses)
+        if (data.amount > 0) {
           totalIncome += data.amount;
-        } else if (data.type === "expense") {
-          totalExpenses += Math.abs(data.amount);
+        } else {
+          totalExpenses += Math.abs(data.amount); // Subtracting for expenses
         }
       });
 
@@ -95,26 +76,35 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
+  // Render transactions to table
   const renderTransactions = (transactions, totalIncome, totalExpenses) => {
+    // Clear existing rows (except header)
     while (elements.transactionsTable.rows.length > 1) {
       elements.transactionsTable.deleteRow(1);
     }
 
+    // Add transaction rows
     transactions.forEach((transaction) => {
       const row = elements.transactionsTable.insertRow();
 
-      const descriptionCell = row.insertCell(0);
-      descriptionCell.textContent = transaction.description || "--";
+      const dateCell = row.insertCell(0);
+      dateCell.textContent = formatDate(transaction.date);
 
-      const amountCell = row.insertCell(1);
-      amountCell.textContent = formatCurrency(transaction.amount);
-      amountCell.className =
+      const typeCell = row.insertCell(1);
+      typeCell.textContent =
+        transaction.type === "expense" ? "Expense" : "Income";
+      typeCell.className =
         transaction.type === "expense" ? "expense" : "income";
 
-      const dateCell = row.insertCell(2);
-      dateCell.textContent = formatDate(transaction.date);
+      const descCell = row.insertCell(2);
+      descCell.textContent = transaction.description || "--";
+
+      const amountCell = row.insertCell(3);
+      amountCell.textContent = formatCurrency(transaction.amount);
+      amountCell.className = transaction.amount < 0 ? "negative" : "positive";
     });
 
+    // Update summary (Total income, expenses, and net change)
     const netChange = totalIncome - totalExpenses;
     elements.totalIncome.textContent = formatCurrency(totalIncome);
     elements.totalExpenses.textContent = formatCurrency(totalExpenses);
@@ -122,6 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
     elements.netChange.className = netChange < 0 ? "negative" : "positive";
   };
 
+  // Initialize event listeners
   const initEventListeners = () => {
     elements.filterAll.addEventListener("click", () => {
       elements.filterAll.classList.add("active");
@@ -149,60 +140,15 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = "index.html";
       });
     });
-
-    elements.sortByAmount.addEventListener("click", () => {
-      if (sortOrder.amount === "none" || sortOrder.amount === "desc") {
-        transactions.sort((a, b) => a.amount - b.amount);
-        sortOrder.amount = "asc";
-      } else {
-        transactions.sort((a, b) => b.amount - a.amount);
-        sortOrder.amount = "desc";
-      }
-      renderTransactions(
-        transactions,
-        parseFloat(elements.totalIncome.textContent.slice(1)),
-        parseFloat(elements.totalExpenses.textContent.slice(1))
-      );
-    });
-
-    elements.sortByDate.addEventListener("click", () => {
-      if (sortOrder.date === "none" || sortOrder.date === "desc") {
-        transactions.sort((a, b) => a.date.seconds - b.date.seconds);
-        sortOrder.date = "asc";
-      } else {
-        transactions.sort((a, b) => b.date.seconds - a.date.seconds);
-        sortOrder.date = "desc";
-      }
-      renderTransactions(
-        transactions,
-        parseFloat(elements.totalIncome.textContent.slice(1)),
-        parseFloat(elements.totalExpenses.textContent.slice(1))
-      );
-    });
   };
 
+  // Auth state listener
   auth.onAuthStateChanged((user) => {
     if (user) {
       console.log("User authenticated:", user.uid);
       currentUser = user;
       elements.userName.textContent =
         user.displayName || user.email.split("@")[0];
-
-      const tableHeaderRow =
-        elements.transactionsTable.querySelector("thead tr");
-      const sortHeaderCellAmount = document.createElement("th");
-      const sortHeaderCellDate = document.createElement("th");
-
-      elements.sortByAmount.textContent = "Amount";
-      elements.sortByDate.textContent = "Date";
-      elements.sortByAmount.classList.add("sort-button");
-      elements.sortByDate.classList.add("sort-button");
-
-      sortHeaderCellAmount.appendChild(elements.sortByAmount);
-      sortHeaderCellDate.appendChild(elements.sortByDate);
-      tableHeaderRow.appendChild(sortHeaderCellAmount);
-      tableHeaderRow.appendChild(sortHeaderCellDate);
-
       loadTransactions(user.uid);
       initEventListeners();
     } else {
@@ -210,4 +156,38 @@ document.addEventListener("DOMContentLoaded", function () {
       window.location.href = "index.html";
     }
   });
+});
+
+// Theme Toggle Functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const themeToggle = document.getElementById('theme-toggle');
+  
+  // Check for saved theme preference, default to light if none exists
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  
+  // Apply the saved theme
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateIcon(savedTheme);
+  
+  // Toggle theme on button click
+  themeToggle.addEventListener('click', function() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateIcon(newTheme);
+  });
+  
+  // Update the icon based on theme
+  function updateIcon(theme) {
+    const icon = themeToggle.querySelector('i');
+    if (theme === 'dark') {
+      icon.classList.remove('fa-moon');
+      icon.classList.add('fa-sun');
+    } else {
+      icon.classList.remove('fa-sun');
+      icon.classList.add('fa-moon');
+    }
+  }
 });
