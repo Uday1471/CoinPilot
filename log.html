@@ -14,7 +14,13 @@
     <div class="container">
       <header>
         <h1 id="log-user-name"></h1>
-        <button id="logout-btn" class="btn">Logout</button>
+        <div class="header-right">
+          <!-- Add this theme toggle button -->
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button id="logout-btn" class="btn">Logout</button>
+        </div>
       </header>
 
       <div class="filter-tabs">
@@ -62,7 +68,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="assets/js/firebase-config.js"></script>
     <script src="assets/js/log.js"></script>
   </body>
 </html>
