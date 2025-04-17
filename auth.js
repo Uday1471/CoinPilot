@@ -1,8 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // Initializing Firebase
+  // Initialize Firebase
   const auth = firebase.auth();
   const db = firebase.firestore();
 
+  // Clean URL if it has hash fragment
   if (window.location.hash) {
     history.replaceState(null, null, " ");
   }
@@ -223,5 +224,29 @@ document.addEventListener("DOMContentLoaded", function () {
     form
       .querySelectorAll(".error-message, .success-message")
       .forEach((el) => el.remove());
+  }
+});
+
+// Theme Toggle Functionality - Simplified version without system preference detection
+document.addEventListener('DOMContentLoaded', function() {
+  const themeToggle = document.getElementById('theme-toggle');
+  const icon = themeToggle.querySelector('i');
+  
+  // Default to light theme if no preference is saved
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateIcon(savedTheme);
+  
+  themeToggle.addEventListener('click', function() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateIcon(newTheme);
+  });
+  
+  function updateIcon(theme) {
+    icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
   }
 });
