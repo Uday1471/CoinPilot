@@ -3,9 +3,107 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Finance Dashboard</title>
+    <link rel="stylesheet" href="assets/css/dashboard.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
-    dashboard
+    <div class="dashboard-container">
+      <header class="dashboard-header">
+        <div class="user-info">
+          <i class="fas fa-user-circle"></i>
+          <span id="user-name">User</span>
+        </div>
+        <div class="header-right">
+          <button id="view-log-btn" class="header-button">
+            <i class="fas fa-history"></i> View Log
+          </button>
+          <button id="logout-btn" class="header-button logout">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+      </header>
+
+      <main class="dashboard-main">
+        <div id="dashboard-view">
+          <div class="financial-cards">
+            <div class="finance-card balance-card">
+              <h2>Current Balance</h2>
+              <div id="current-balance">$0.00</div>
+            </div>
+            <div class="finance-card income-card">
+                <h2>Monthly Income</h2>
+                <div id="monthly-income">$0.00</div>
+                <div class="income-actions">
+                  <button id="quick-add-salary" class="quick-add-button">
+                    <i class="fas fa-bolt"></i> Quick Add Salary
+                  </button>
+                  <button id="edit-income-btn" class="edit-button">
+                    <i class="fas fa-edit"></i> Edit
+                  </button>
+                </div>
+              </div>
+
+          <div class="transaction-actions">
+            <button id="add-expense-btn" class="action-button expense">
+              <i class="fas fa-minus-circle"></i> Add Expense
+            </button>
+            <button id="add-income-btn" class="action-button income">
+              <i class="fas fa-plus-circle"></i> Add Income
+            </button>
+          </div>
+
+          <form id="transaction-form" class="hidden">
+            <h3><span id="form-title">Add Transaction</span></h3>
+            <div class="form-group">
+              <label for="transaction-amount">Amount</label>
+              <input
+                type="number"
+                id="transaction-amount"
+                step="0.01"
+                min="0.01"
+                required />
+            </div>
+            <div class="form-group">
+              <label for="transaction-description">Description</label>
+              <input
+                type="text"
+                id="transaction-description"
+                placeholder="What was this for?" />
+            </div>
+            <div class="form-group">
+              <label for="transaction-date">Date</label>
+              <input type="date" id="transaction-date" required />
+            </div>
+            <div class="form-buttons">
+              <button type="submit" id="submit-transaction" class="submit-btn">Submit</button>
+              <button type="button" id="cancel-transaction" class="cancel-btn">Cancel</button>
+            </div>
+          </form>
+          
+        </div>
+      </main>
+    </div>
+    <div id="income-modal" class="modal hidden">
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <h3>Edit Monthly Income</h3>
+          <div class="form-group">
+            <label for="new-monthly-income">New Monthly Income</label>
+            <input type="number" id="new-monthly-income" step="0.01" min="0" required>
+          </div>
+          <button id="save-income-btn" class="submit-btn">Save Changes</button>
+        </div>
+      </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/dashboard.js"></script>
   </body>
 </html>
+
