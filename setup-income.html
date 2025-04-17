@@ -1,155 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Income Setup | Personal Finance Tracker</title>
-    <link rel="stylesheet" href="assets/css/auth.css" />
-    <link rel="stylesheet" href="assets/css/dashboard.css" />
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <style>
-      .setup-container {
-        max-width: 500px;
-        margin: 2rem auto;
-        padding: 2rem;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        position: relative;
-      }
 
-      #back-button {
-        position: absolute;
-        left: 1.5rem;
-        top: 1.5rem;
-        background: none;
-        border: none;
-        color: #4a6bff;
-        font-size: 1.2rem;
-        cursor: pointer;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Income Setup | Personal Finance Tracker</title>
+  <link rel="stylesheet" href="assets/css/auth.css" />
+  <link rel="stylesheet" href="assets/css/dashboard.css" />
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    /* Dark Theme Variables */
+    [data-theme="dark"] {
+      --primary-color: #5d78ff;
+      --primary-dark: #4a62e0;
+      --secondary-color: #1a1a2e;
+      --text-color: #f0f0f0;
+      --light-text: #b0b0b0;
+      --border-color: #444;
+      --background-color: #121212;
+      --white: #1e1e1e;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
 
-      .alert {
-        padding: 12px;
-        border-radius: 6px;
-        margin-bottom: 1rem;
-        font-size: 0.9rem;
-      }
+    [data-theme="dark"] body {
+      background-image: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
 
-      .alert-success {
-        background-color: #e6ffed;
-        color: #2d8041;
-        border: 1px solid #9be9b3;
-      }
+    [data-theme="dark"] .setup-container {
+      background-color: var(--white);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
 
-      .alert-error {
-        background-color: #ffebee;
-        color: #c62828;
-        border: 1px solid #ef9a9a;
-      }
+    [data-theme="dark"] .form-group input,
+    [data-theme="dark"] .form-group select {
+      background-color: #2d2d2d;
+      color: #f0f0f0;
+      border-color: #444;
+    }
 
-      .form-group {
-        margin-bottom: 1.25rem;
-      }
-      .required-field::after {
-        content: " *";
-        color: red;
-      }
-      .error-border {
-        border: 1px solid #e74c3c !important;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="auth-container">
-      <div class="setup-container">
-        <button id="back-button" style="display: none">
-          <i class="fas fa-arrow-left"></i>
-        </button>
+    [data-theme="dark"] .setup-header h2,
+    [data-theme="dark"] .setup-header p,
+    [data-theme="dark"] .form-group label,
+    [data-theme="dark"] .form-text {
+      color: #f0f0f0;
+    }
 
-        <div class="setup-header">
-          <h2>
-            <i class="fas fa-wallet"></i>
-            <span id="form-title">Set Up Your Income</span>
-          </h2>
-          <p id="form-subtitle">
-            Let's get started by understanding your financial situation
-          </p>
+    [data-theme="dark"] .alert-success {
+      background-color: rgba(76, 175, 80, 0.2);
+      border-color: rgba(76, 175, 80, 0.3);
+    }
+
+    [data-theme="dark"] .alert-error {
+      background-color: rgba(255, 77, 77, 0.2);
+      border-color: rgba(255, 77, 77, 0.3);
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      color: var(--text-color);
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .theme-toggle:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] .theme-toggle {
+      color: #f0f0f0;
+    }
+
+    [data-theme="dark"] .theme-toggle:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Adjust back button position when theme toggle is present */
+    #back-button {
+      left: 1.5rem;
+      top: 1.5rem;
+      z-index: 10;
+    }
+
+    .setup-container {
+      max-width: 500px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
+
+    #back-button {
+      position: absolute;
+      left: 1.5rem;
+      top: 1.5rem;
+      background: none;
+      border: none;
+      color: #4a6bff;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .alert {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .alert-success {
+      background-color: #e6ffed;
+      color: #2d8041;
+      border: 1px solid #9be9b3;
+    }
+
+    .alert-error {
+      background-color: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .required-field::after {
+      content: " *";
+      color: red;
+    }
+
+    .error-border {
+      border: 1px solid #e74c3c !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="auth-container">
+    <div class="setup-container">
+      <button id="back-button" style="display: none">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+        <i class="fas fa-moon"></i>
+      </button>
+
+      <div class="setup-header">
+        <h2>
+          <i class="fas fa-wallet"></i>
+          <span id="form-title">Set Up Your Income</span>
+        </h2>
+        <p id="form-subtitle">
+          Let's get started by understanding your financial situation
+        </p>
+      </div>
+
+      <form id="income-setup-form">
+        <div id="form-alerts"></div>
+
+        <div class="form-group">
+          <label for="current-balance">Current Account Balance ($)</label>
+          <input type="number" id="current-balance" step="0.01" required placeholder="e.g., 5000.00" />
+          <small class="form-text">Enter your current total account balance</small>
         </div>
 
-        <form id="income-setup-form">
-          <div id="form-alerts"></div>
+        <div class="form-group">
+          <label for="income-amount">Monthly Income ($)</label>
+          <input type="number" id="income-amount" step="0.01" min="0" required placeholder="e.g., 3000.00" />
+          <small class="form-text">Your regular monthly income</small>
+        </div>
 
-          <div class="form-group">
-            <label for="current-balance">Current Account Balance ($)</label>
-            <input
-              type="number"
-              id="current-balance"
-              step="0.01"
-              required
-              placeholder="e.g., 5000.00" />
-            <small class="form-text"
-              >Enter your current total account balance</small
-            >
-          </div>
+        <div class="form-group">
+          <label for="income-source">Primary Income Source</label>
+          <select id="income-source" required>
+            <option value="">Select source</option>
+            <option value="Salary">Salary/Employment</option>
+            <option value="Freelance">Freelance/Self-Employment</option>
+            <option value="Investments">Investments</option>
+            <option value="Business">Business Income</option>
+            <option value="Pension">Pension/Retirement</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
 
-          <div class="form-group">
-            <label for="income-amount">Monthly Income ($)</label>
-            <input
-              type="number"
-              id="income-amount"
-              step="0.01"
-              min="0"
-              required
-              placeholder="e.g., 3000.00" />
-            <small class="form-text">Your regular monthly income</small>
-          </div>
+        <div class="form-group" id="other-source-group" style="display: none">
+          <label for="other-source">Please specify</label>
+          <input type="text" id="other-source" placeholder="Describe your income source" />
+        </div>
 
-          <div class="form-group">
-            <label for="income-source">Primary Income Source</label>
-            <select id="income-source" required>
-              <option value="">Select source</option>
-              <option value="Salary">Salary/Employment</option>
-              <option value="Freelance">Freelance/Self-Employment</option>
-              <option value="Investments">Investments</option>
-              <option value="Business">Business Income</option>
-              <option value="Pension">Pension/Retirement</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+        <div class="form-group">
+          <label for="income-frequency">Payment Frequency</label>
+          <select id="income-frequency" required>
+            <option value="monthly">Monthly</option>
+            <option value="bi-weekly">Bi-Weekly</option>
+            <option value="weekly">Weekly</option>
+            <option value="irregular">Irregular</option>
+          </select>
+        </div>
 
-          <div class="form-group" id="other-source-group" style="display: none">
-            <label for="other-source">Please specify</label>
-            <input
-              type="text"
-              id="other-source"
-              placeholder="Describe your income source" />
-          </div>
-
-          <div class="form-group">
-            <label for="income-frequency">Payment Frequency</label>
-            <select id="income-frequency" required>
-              <option value="monthly">Monthly</option>
-              <option value="bi-weekly">Bi-Weekly</option>
-              <option value="weekly">Weekly</option>
-              <option value="irregular">Irregular</option>
-            </select>
-          </div>
-
-          <button type="submit" class="btn-primary" id="submit-btn">
-            <i class="fas fa-save"></i>
-            <span id="submit-text">Save & Continue</span>
-          </button>
-        </form>
-      </div>
+        <button type="submit" class="btn-primary" id="submit-btn">
+          <i class="fas fa-save"></i>
+          <span id="submit-text">Save & Continue</span>
+        </button>
+      </form>
     </div>
+  </div>
 
-    <script src="assets/js/firebase-config.js"></script>
-    <script src="assets/js/setup-income.js"></script>
-  </body>
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/setup-income.js"></script>
+</body>
+
 </html>
