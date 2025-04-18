@@ -141,35 +141,35 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Theme Toggle Functionality
-document.addEventListener('DOMContentLoaded', function() {
-  const themeToggle = document.getElementById('theme-toggle');
-  
+document.addEventListener("DOMContentLoaded", function () {
+  const themeToggle = document.getElementById("theme-toggle");
+
   // Check for saved theme preference, default to light if none exists
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  
+  const savedTheme = localStorage.getItem("theme") || "light";
+
   // Apply the saved theme
-  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.documentElement.setAttribute("data-theme", savedTheme);
   updateIcon(savedTheme);
-  
+
   // Toggle theme on button click
-  themeToggle.addEventListener('click', function() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
+  themeToggle.addEventListener("click", function () {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
     updateIcon(newTheme);
   });
-  
+
   // Update the icon based on theme
   function updateIcon(theme) {
-    const icon = themeToggle.querySelector('i');
-    if (theme === 'dark') {
-      icon.classList.remove('fa-moon');
-      icon.classList.add('fa-sun');
+    const icon = themeToggle.querySelector("i");
+    if (theme === "dark") {
+      icon.classList.remove("fa-moon");
+      icon.classList.add("fa-sun");
     } else {
-      icon.classList.remove('fa-sun');
-      icon.classList.add('fa-moon');
+      icon.classList.remove("fa-sun");
+      icon.classList.add("fa-moon");
     }
   }
-}); 
+});
