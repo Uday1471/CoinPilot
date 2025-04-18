@@ -1,3 +1,4 @@
+
 const firebaseConfig = {
   apiKey: "AIzaSyCNXuQDGoCdxCqhn9fP7HPo-kd_BVyJJGc",
   authDomain: "personal-finance-tracker-b96bf.firebaseapp.com",
@@ -8,6 +9,8 @@ const firebaseConfig = {
   measurementId: "G-MWPE179L4D",
 };
 
-// Initializing Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
+// Initialize Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+console.log("Firebase initialized"); // Debug log
