@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Finance Dashboard</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css" />
+    <link rel="stylesheet" href="dashboard.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -12,13 +12,16 @@
   <body>
     <div class="dashboard-container">
       <header class="dashboard-header">
+        <img src="logo.png" alt="Logo" class="logo" />
         <div class="user-info">
           <i class="fas fa-user-circle"></i>
           <span id="user-name">User</span>
         </div>
         <div class="header-right">
-          <!-- Add this theme toggle button -->
-          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+          <button
+            id="theme-toggle"
+            class="theme-toggle"
+            aria-label="Toggle dark mode">
             <i class="fas fa-moon"></i>
           </button>
           <button id="view-log-btn" class="header-button">
@@ -32,24 +35,27 @@
 
       <main class="dashboard-main">
         <div id="dashboard-view">
+          <div id="low-balance-alert" class="alert hidden">
+            Low balance, recharge quickly and spend carefully
+          </div>
           <div class="financial-cards">
             <div class="finance-card balance-card">
               <h2>Current Balance</h2>
               <div id="current-balance">$0.00</div>
             </div>
             <div class="finance-card income-card">
-                <h2>Monthly Income</h2>
-                <div id="monthly-income">$0.00</div>
-                <div class="income-actions">
-                  <button id="quick-add-salary" class="quick-add-button">
-                    <i class="fas fa-bolt"></i> Quick Add Salary
-                  </button>
-                  <button id="edit-income-btn" class="edit-button">
-                    <i class="fas fa-edit"></i> Edit
-                  </button>
-                </div>
+              <h2>Monthly Income</h2>
+              <div id="monthly-income">$0.00</div>
+              <div class="income-actions">
+                <button id="quick-add-salary" class="quick-add-button">
+                  <i class="fas fa-bolt"></i> Quick Add Salary
+                </button>
+                <button id="edit-income-btn" class="edit-button">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
               </div>
-
+            </div>
+          </div>
           <div class="transaction-actions">
             <button id="add-expense-btn" class="action-button expense">
               <i class="fas fa-minus-circle"></i> Add Expense
@@ -58,7 +64,6 @@
               <i class="fas fa-plus-circle"></i> Add Income
             </button>
           </div>
-
           <form id="transaction-form" class="hidden">
             <h3><span id="form-title">Add Transaction</span></h3>
             <div class="form-group">
@@ -82,31 +87,57 @@
               <input type="date" id="transaction-date" required />
             </div>
             <div class="form-buttons">
-              <button type="submit" id="submit-transaction" class="submit-btn">Submit</button>
-              <button type="button" id="cancel-transaction" class="cancel-btn">Cancel</button>
+              <button type="submit" id="submit-transaction" class="submit-btn">
+                Submit
+              </button>
+              <button type="button" id="cancel-transaction" class="cancel-btn">
+                Cancel
+              </button>
             </div>
           </form>
-          
         </div>
       </main>
-    </div>
-    <div id="income-modal" class="modal hidden">
-        <div class="modal-content">
-          <span class="close-modal">&times;</span>
-          <h3>Edit Monthly Income</h3>
-          <div class="form-group">
-            <label for="new-monthly-income">New Monthly Income</label>
-            <input type="number" id="new-monthly-income" step="0.01" min="0" required>
-          </div>
-          <button id="save-income-btn" class="submit-btn">Save Changes</button>
+
+      <div class="latest-transaction-card">
+        <h2>Latest Transaction</h2>
+        <div id="latest-transaction">
+          <p><strong>Amount:</strong> <span id="latest-amount">$0.00</span></p>
+          <p>
+            <strong>Description:</strong>
+            <span id="latest-description">N/A</span>
+          </p>
+          <p><strong>Date:</strong> <span id="latest-date">--/--/----</span></p>
         </div>
       </div>
+      <!-- Balance Trend Chart -->
+      <div class="balance-trend-container">
+        <h3>Balance Trend Over Time</h3>
+        <canvas id="balance-chart" width="100" height="50"></canvas>
+      </div>
+    </div>
 
-    <!-- Firebase Scripts -->
+    <div id="income-modal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h3>Edit Monthly Income</h3>
+        <div class="form-group">
+          <label for="new-monthly-income">New Monthly Income</label>
+          <input
+            type="number"
+            id="new-monthly-income"
+            step="0.01"
+            min="0"
+            required />
+        </div>
+        <button id="save-income-btn" class="submit-btn">Save Changes</button>
+      </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="assets/js/firebase-config.js"></script>
-    <script src="assets/js/dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="dashboard.js"></script>
   </body>
 </html>
