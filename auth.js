@@ -226,7 +226,6 @@ document.addEventListener("DOMContentLoaded", function () {
       .forEach((el) => el.remove());
   }
 });
-
 // Theme Toggle Functionality - Simplified version without system preference detection
 document.addEventListener('DOMContentLoaded', function() {
   const themeToggle = document.getElementById('theme-toggle');
