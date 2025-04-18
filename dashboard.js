@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   console.log("Dashboard loaded");
 
-  // Firebase should be initialized in firebase-config.js
   if (!firebase.apps.length) {
     console.error("Firebase not initialized - check firebase-config.js");
     return;
@@ -10,8 +9,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const auth = firebase.auth();
   const db = firebase.firestore();
 
+  // DOM elements
   const elements = {
     userName: document.getElementById("user-name"),
+    editIncomeBtn: document.getElementById("edit-income-btn"),
     logoutBtn: document.getElementById("logout-btn"),
     currentBalance: document.getElementById("current-balance"),
     monthlyIncome: document.getElementById("monthly-income"),
@@ -26,11 +27,15 @@ document.addEventListener("DOMContentLoaded", function () {
     amountInput: document.getElementById("transaction-amount"),
     descInput: document.getElementById("transaction-description"),
     dateInput: document.getElementById("transaction-date"),
-    editIncomeBtn: document.getElementById("edit-income-btn"),
     incomeModal: document.getElementById("income-modal"),
     closeModal: document.querySelector(".close-modal"),
     newMonthlyIncomeInput: document.getElementById("new-monthly-income"),
     saveIncomeBtn: document.getElementById("save-income-btn"),
+    latestAmount: document.getElementById("latest-amount"),
+    latestDescription: document.getElementById("latest-description"),
+    latestDate: document.getElementById("latest-date"),
+    balanceChart: document.getElementById("balance-chart"),
+    lowBalanceAlert: document.getElementById("low-balance-alert"),
   };
 
   let currentUser = null;
@@ -38,9 +43,8 @@ document.addEventListener("DOMContentLoaded", function () {
     currentBalance: 0,
     monthlyIncome: 0,
   };
-  let currentTransactionType = null;
 
-  const formatCurrency = (amount) => "$" + (amount || 0).toFixed(2);
+  const formatCurrency = (amount) => `$${amount.toFixed(2)}`;
 
   const showIncomeModal = () => {
     elements.newMonthlyIncomeInput.value = userData.monthlyIncome || "";
@@ -71,6 +75,93 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
+  const updateBalanceChart = async (userId) => {
+    try {
+      const transactionsRef = db
+        .collection("users")
+        .doc(userId)
+        .collection("transactions");
+      const snapshot = await transactionsRef.orderBy("date", "asc").get();
+      let balance = 0;
+      const labels = [];
+      const data = [];
+
+      snapshot.forEach((doc) => {
+        const tx = doc.data();
+        balance += tx.type === "income" ? tx.amount : -tx.amount;
+        labels.push(formatDate(tx.date));
+        data.push(balance);
+      });
+
+      const ctx = elements.balanceChart.getContext("2d");
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Balance Over Time",
+              data: data,
+              borderColor: "#4f46e5",
+              backgroundColor: "rgba(79, 70, 229, 0.1)",
+              fill: true,
+              tension: 0.4,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { callback: (value) => `$${value}` },
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Failed to load balance chart:", error);
+    }
+  };
+
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "";
+    const date =
+      timestamp instanceof firebase.firestore.Timestamp
+        ? timestamp.toDate()
+        : new Date(timestamp.seconds * 1000);
+    return date.toLocaleDateString();
+  };
+
+  const loadLatestTransaction = async (userId) => {
+    try {
+      const transactionsRef = db
+        .collection("users")
+        .doc(userId)
+        .collection("transactions");
+      const snapshot = await transactionsRef
+        .orderBy("createdAt", "desc")
+        .limit(1)
+        .get();
+      const latestTransaction = snapshot.docs.map((doc) => doc.data())[0];
+
+      if (latestTransaction) {
+        elements.latestAmount.textContent = formatCurrency(
+          latestTransaction.amount
+        );
+        elements.latestDescription.textContent =
+          latestTransaction.description || "N/A";
+        elements.latestDate.textContent = formatDate(latestTransaction.date);
+      } else {
+        elements.latestAmount.textContent = formatCurrency(0);
+        elements.latestDescription.textContent = "N/A";
+        elements.latestDate.textContent = "--/--/----";
+      }
+    } catch (error) {
+      console.error("Error loading latest transaction:", error);
+    }
+  };
+
   const loadUserData = async (userId) => {
     try {
       const doc = await db.collection("users").doc(userId).get();
@@ -82,14 +173,20 @@ document.addEventListener("DOMContentLoaded", function () {
         elements.monthlyIncome.textContent = formatCurrency(
           userData.monthlyIncome || 0
         );
+        elements.lowBalanceAlert.classList.toggle(
+          "hidden",
+          userData.currentBalance >= 1000
+        );
       } else {
-        await db.collection("users").doc(userId).set({
-          currentBalance: 0,
-          monthlyIncome: 0,
-        });
+        await db
+          .collection("users")
+          .doc(userId)
+          .set({ currentBalance: 0, monthlyIncome: 0 });
         elements.currentBalance.textContent = "$0.00";
         elements.monthlyIncome.textContent = "$0.00";
+        elements.lowBalanceAlert.classList.add("hidden");
       }
+      loadLatestTransaction(userId);
     } catch (error) {
       console.error("Error loading user data:", error);
     }
@@ -97,17 +194,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const handleTransactionSubmit = async (e) => {
     e.preventDefault();
-    console.log("handleTransactionSubmit called");
     const type = elements.formTitle.textContent.includes("Income")
       ? "income"
       : "expense";
     const amount = parseFloat(elements.amountInput.value);
     const description = elements.descInput.value.trim();
-    const date = elements.dateInput.value;
+    const dateValue = elements.dateInput.value;
 
-    console.log("Type:", type, "Amount:", amount, "Date:", date);
-
-    if (!amount || amount <= 0 || !date) {
+    if (!amount || amount <= 0 || !dateValue) {
       alert("Please enter a valid amount and date.");
       return;
     }
@@ -118,98 +212,31 @@ document.addEventListener("DOMContentLoaded", function () {
       const transactionRef = userRef.collection("transactions").doc();
       const transactionId = transactionRef.id;
 
-      console.log("Transaction ID:", transactionId);
+      const transactionDate = new Date(dateValue);
       await transactionRef.set({
         transactionId: transactionId,
         amount: amount,
         description: description,
-        date: firebase.firestore.Timestamp.fromDate(new Date(date)),
+        date: firebase.firestore.Timestamp.fromDate(transactionDate),
         type: type,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
-      console.log("Transaction written to Firestore");
 
-      // Update currentBalance
-      let newBalance;
-      if (type === "income") {
-        newBalance = (userData.currentBalance || 0) + amount;
-      } else {
-        newBalance = (userData.currentBalance || 0) - amount;
-      }
-
-      await userRef.update({
-        currentBalance: newBalance,
-      });
+      const newBalance =
+        type === "income"
+          ? userData.currentBalance + amount
+          : userData.currentBalance - amount;
+      await userRef.update({ currentBalance: newBalance });
 
       userData.currentBalance = newBalance;
       elements.currentBalance.textContent = formatCurrency(newBalance);
+      elements.lowBalanceAlert.classList.toggle("hidden", newBalance >= 1000);
+
       resetTransactionForm();
+      loadLatestTransaction(userId);
     } catch (error) {
       console.error("Transaction failed:", error);
       alert("Transaction failed. Please try again.");
-    }
-  };
-
-  const quickAddSalary = async () => {
-    if (!currentUser || !currentUser.uid) {
-      alert("User session not found. Please reload and try again.");
-      return;
-    }
-
-    if (userData.monthlyIncome <= 0) {
-      alert("Monthly income not set or invalid");
-      return;
-    }
-
-    if (
-      confirm(
-        `Add monthly salary of ${formatCurrency(
-          userData.monthlyIncome
-        )} to your balance?`
-      )
-    ) {
-      elements.quickAddSalaryBtn.disabled = true;
-      elements.quickAddSalaryBtn.innerHTML =
-        '<i class="fas fa-spinner fa-spin"></i> Processing...';
-
-      try {
-        const userId = currentUser.uid;
-        const userRef = db.collection("users").doc(userId);
-
-        const newBalance =
-          (userData.currentBalance || 0) + (userData.monthlyIncome || 0);
-
-        await userRef.update({
-          currentBalance: newBalance,
-          lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-
-        // Add salary transaction to the transactions sub-collection
-        const transactionRef = userRef.collection("transactions").doc();
-        const transactionId = transactionRef.id;
-        await transactionRef.set({
-          transactionId: transactionId,
-          amount: userData.monthlyIncome,
-          description: "Monthly Salary",
-          date: firebase.firestore.Timestamp.fromDate(new Date()),
-          type: "income",
-        });
-        console.log("Salary transaction added with ID: ", transactionId);
-
-        userData.currentBalance = newBalance;
-
-        elements.currentBalance.textContent = formatCurrency(newBalance);
-        elements.quickAddSalaryBtn.disabled = false;
-        elements.quickAddSalaryBtn.innerHTML =
-          '<i class="fas fa-bolt"></i> Quick Add Salary';
-
-        console.log("Quick salary added successfully");
-      } catch (error) {
-        console.error("Error adding salary:", error);
-        alert("Failed to add salary. Please try again.");
-        elements.quickAddSalaryBtn.disabled = false;
-        elements.quickAddSalaryBtn.innerHTML =
-          '<i class="fas fa-bolt"></i> Quick Add Salary';
-      }
     }
   };
 
@@ -220,85 +247,118 @@ document.addEventListener("DOMContentLoaded", function () {
     elements.dateInput.value = new Date().toISOString().split("T")[0];
   };
 
-  const initEventListeners = () => {
-    elements.addExpenseBtn.addEventListener("click", () => {
-      currentTransactionType = "expense";
-      elements.formTitle.textContent = "Add Expense";
-      elements.transactionForm.classList.remove("hidden");
-    });
+  const quickAddSalary = async () => {
+    if (!currentUser || !userData.monthlyIncome) {
+      alert("Invalid user or monthly income.");
+      return;
+    }
 
-    elements.addIncomeBtn.addEventListener("click", () => {
-      currentTransactionType = "income";
-      elements.formTitle.textContent = "Add Income";
-      elements.transactionForm.classList.remove("hidden");
-    });
+    if (
+      confirm(
+        `Add monthly salary of ${formatCurrency(userData.monthlyIncome)}?`
+      )
+    ) {
+      elements.quickAddSalaryBtn.disabled = true;
+      elements.quickAddSalaryBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
-    elements.submitBtn.addEventListener("click", handleTransactionSubmit);
-    elements.cancelBtn.addEventListener("click", resetTransactionForm);
-    elements.quickAddSalaryBtn.addEventListener("click", quickAddSalary);
-    elements.viewLogBtn.addEventListener("click", () => {
-      window.location.href = "log.html";
-    });
+      try {
+        const userId = currentUser.uid;
+        const userRef = db.collection("users").doc(userId);
 
-    elements.logoutBtn.addEventListener("click", () => {
-      auth.signOut().then(() => {
-        window.location.href = "index.html";
-      });
-    });
+        const newBalance = userData.currentBalance + userData.monthlyIncome;
+        await userRef.update({ currentBalance: newBalance });
 
-    elements.editIncomeBtn.addEventListener("click", showIncomeModal);
-    elements.closeModal.addEventListener("click", hideIncomeModal);
-    elements.saveIncomeBtn.addEventListener("click", updateMonthlyIncome);
-    elements.incomeModal.addEventListener("click", (e) => {
-      if (e.target === elements.incomeModal) hideIncomeModal();
-    });
+        const transactionRef = userRef.collection("transactions").doc();
+        const today = new Date();
+        await transactionRef.set({
+          transactionId: transactionRef.id,
+          amount: userData.monthlyIncome,
+          description: "Monthly Salary",
+          date: firebase.firestore.Timestamp.fromDate(today),
+          type: "income",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+
+        userData.currentBalance = newBalance;
+        elements.currentBalance.textContent = formatCurrency(newBalance);
+        elements.lowBalanceAlert.classList.toggle("hidden", newBalance >= 1000);
+
+        elements.quickAddSalaryBtn.disabled = false;
+        elements.quickAddSalaryBtn.innerHTML = "Quick Add Salary";
+      } catch (error) {
+        console.error("Error during quick salary add:", error);
+        alert("Failed to add salary.");
+        elements.quickAddSalaryBtn.disabled = false;
+        elements.quickAddSalaryBtn.innerHTML = "Quick Add Salary";
+      }
+    }
   };
 
-  auth.onAuthStateChanged((user) => {
+  auth.onAuthStateChanged(async (user) => {
     if (user) {
       currentUser = user;
-      elements.userName.textContent =
-        user.displayName || user.email.split("@")[0];
+      elements.userName.textContent = `Welcome, ${
+        user.displayName || user.email
+      }`;
       loadUserData(user.uid);
-      initEventListeners();
+      updateBalanceChart(user.uid);
     } else {
-      window.location.href = "index.html";
+      window.location.replace("index.html");
     }
   });
 
-  // Set today's date as default
-  elements.dateInput.value = new Date().toISOString().split("T")[0];
+  // Event listeners
+  elements.editIncomeBtn.addEventListener("click", showIncomeModal);
+  elements.saveIncomeBtn.addEventListener("click", updateMonthlyIncome);
+  elements.cancelBtn.addEventListener("click", resetTransactionForm);
+  elements.addIncomeBtn.addEventListener("click", () => {
+    elements.formTitle.textContent = "Add Income";
+    elements.transactionForm.classList.remove("hidden");
+  });
+  elements.addExpenseBtn.addEventListener("click", () => {
+    elements.formTitle.textContent = "Add Expense";
+    elements.transactionForm.classList.remove("hidden");
+  });
+  elements.logoutBtn.addEventListener("click", () => auth.signOut());
+  elements.closeModal.addEventListener("click", hideIncomeModal);
+  elements.viewLogBtn.addEventListener(
+    "click",
+    () => (window.location.href = "log.html")
+  );
+  elements.quickAddSalaryBtn.addEventListener("click", quickAddSalary);
+  elements.submitBtn.addEventListener("click", handleTransactionSubmit);
 });
 // Theme Toggle Functionality
-document.addEventListener('DOMContentLoaded', function() {
-  const themeToggle = document.getElementById('theme-toggle');
-  
+document.addEventListener("DOMContentLoaded", function () {
+  const themeToggle = document.getElementById("theme-toggle");
+
   // Check for saved theme preference, default to light if none exists
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  
+  const savedTheme = localStorage.getItem("theme") || "light";
+
   // Apply the saved theme
-  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.documentElement.setAttribute("data-theme", savedTheme);
   updateIcon(savedTheme);
-  
+
   // Toggle theme on button click
-  themeToggle.addEventListener('click', function() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
+  themeToggle.addEventListener("click", function () {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
     updateIcon(newTheme);
   });
-  
+
   // Update the icon based on theme
   function updateIcon(theme) {
-    const icon = themeToggle.querySelector('i');
-    if (theme === 'dark') {
-      icon.classList.remove('fa-moon');
-      icon.classList.add('fa-sun');
+    const icon = themeToggle.querySelector("i");
+    if (theme === "dark") {
+      icon.classList.remove("fa-moon");
+      icon.classList.add("fa-sun");
     } else {
-      icon.classList.remove('fa-sun');
-      icon.classList.add('fa-moon');
+      icon.classList.remove("fa-sun");
+      icon.classList.add("fa-moon");
     }
   }
 });
