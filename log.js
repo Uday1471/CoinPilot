@@ -10,6 +10,22 @@ document.addEventListener("DOMContentLoaded", function () {
   const db = firebase.firestore();
   let currentUser;
 
+  // Currency settings
+  let currentCurrency = localStorage.getItem('selectedCurrency') || 'INR'; // Default to INR if no preference saved
+  let exchangeRate = 83; // Default exchange rate USD to INR (will be updated on fetch)
+
+  // Fetch current exchange rate
+  async function fetchExchangeRate() {
+    try {
+      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+      const data = await response.json();
+      exchangeRate = data.rates.INR;
+      // No display update needed on log page, just store for conversion
+    } catch (error) {
+      console.error('Error fetching exchange rate in log page:', error);
+    }
+  }
+
   const elements = {
     userName: document.getElementById("log-user-name"),
     logoutBtn: document.getElementById("logout-btn"),
@@ -29,8 +45,18 @@ document.addEventListener("DOMContentLoaded", function () {
     closeModalBtn: document.querySelector(".close-modal-btn"), // Close button in modal
   };
 
-  const formatCurrency = (amount) => {
-    return "$" + (amount || 0).toFixed(2);
+  // Format currency based on selected currency and apply conversion
+  const formatCurrency = (amountInBaseCurrency) => {
+    let amountToDisplay = amountInBaseCurrency;
+    if (currentCurrency === 'USD' && exchangeRate > 0) {
+      amountToDisplay = amountInBaseCurrency / exchangeRate;
+    }
+    const formattedAmount = new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: currentCurrency,
+      maximumFractionDigits: 2
+    }).format(amountToDisplay);
+    return formattedAmount;
   };
 
   const formatDate = (timestamp) => {
@@ -76,6 +102,9 @@ document.addEventListener("DOMContentLoaded", function () {
     date: "desc",
   };
   let currentFilter = "all";
+
+  // Fetch exchange rate on load
+  fetchExchangeRate();
 
   const loadTransactions = async (userId, filterType = "all") => {
     if (!userId) {
