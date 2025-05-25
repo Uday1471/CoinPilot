@@ -33,13 +33,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Format currency based on selected currency
-  const formatCurrency = (amount) => {
-    const formattedAmount = new Intl.NumberFormat('en-IN', {
+  // Format currency based on selected currency and apply conversion
+  const formatCurrency = (amountInBaseCurrency) => {
+    let amountToDisplay = amountInBaseCurrency;
+    if (currentCurrency === 'USD' && exchangeRate > 0) { // Add check for exchangeRate > 0 to avoid division by zero
+      amountToDisplay = amountInBaseCurrency / exchangeRate;
+    }
+    // If currentCurrency is INR or exchangeRate is 0 or less, amountToDisplay remains amountInBaseCurrency
+
+    const formattedAmount = new Intl.NumberFormat('en-IN', { // Using en-IN locale for formatting consistency, currency symbol changes based on `currency` option
       style: 'currency',
       currency: currentCurrency,
       maximumFractionDigits: 2
-    }).format(amount);
+    }).format(amountToDisplay);
     return formattedAmount;
   };
 
@@ -147,13 +153,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
       snapshot.forEach((doc) => {
         const tx = doc.data();
-        balance += tx.type === "income" ? tx.amount : -tx.amount;
+        balance += tx.type === "income" ? tx.amount : -tx.amount; // balance is in INR
         labels.push(formatDate(tx.date));
-        data.push(balance);
+        // Convert balance to current currency before pushing to data array
+        const balanceInCurrentCurrency = currentCurrency === 'USD' && exchangeRate > 0 ? balance / exchangeRate : balance;
+        data.push(balanceInCurrentCurrency);
       });
 
       const ctx = elements.balanceChart.getContext("2d");
-      new Chart(ctx, {
+      // Destroy existing chart instance if it exists
+      if (elements.balanceChart.chart) {
+        elements.balanceChart.chart.destroy();
+      }
+      elements.balanceChart.chart = new Chart(ctx, {
         type: "line",
         data: {
           labels: labels,
@@ -173,7 +185,8 @@ document.addEventListener("DOMContentLoaded", function () {
           scales: {
             y: {
               beginAtZero: true,
-              ticks: { callback: (value) => `$${value}` },
+              // Update ticks to format according to current currency and conversion
+              ticks: { callback: (value) => formatCurrency(value * (currentCurrency === 'USD' && exchangeRate > 0 ? exchangeRate : 1)) }, // Pass value in base currency (INR) to formatCurrency
             },
           },
         },
