@@ -19,6 +19,31 @@ document.addEventListener("DOMContentLoaded", function () {
   const loginFormDiv = document.getElementById("login-form");
   const registerFormDiv = document.getElementById("register-form");
   const forgotFormDiv = document.getElementById("forgot-form");
+  const themeToggle = document.getElementById("theme-toggle");
+  const icon = themeToggle?.querySelector("i");
+
+  // Theme Toggle Functionality
+  if (themeToggle && icon) {
+    // Default to light theme if no preference is saved
+    const savedTheme = localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    updateIcon(savedTheme);
+
+    themeToggle.addEventListener("click", function () {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+      document.documentElement.setAttribute("data-theme", newTheme);
+      localStorage.setItem("theme", newTheme);
+      updateIcon(newTheme);
+    });
+  }
+
+  function updateIcon(theme) {
+    if (icon) {
+      icon.className = theme === "dark" ? "fas fa-sun" : "fas fa-moon";
+    }
+  }
 
   // Form switching
   showRegister.addEventListener("click", (e) => {
@@ -57,6 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
       checkUserSetup(user.uid); // Check if setup is complete
     } catch (error) {
       console.error("Error during login:", error);
+      handleAuthError(loginForm, error);
     }
   });
 
@@ -224,28 +250,5 @@ document.addEventListener("DOMContentLoaded", function () {
     form
       .querySelectorAll(".error-message, .success-message")
       .forEach((el) => el.remove());
-  }
-});
-// Theme Toggle Functionality - Simplified version without system preference detection
-document.addEventListener('DOMContentLoaded', function() {
-  const themeToggle = document.getElementById('theme-toggle');
-  const icon = themeToggle.querySelector('i');
-  
-  // Default to light theme if no preference is saved
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  updateIcon(savedTheme);
-  
-  themeToggle.addEventListener('click', function() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateIcon(newTheme);
-  });
-  
-  function updateIcon(theme) {
-    icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
   }
 });

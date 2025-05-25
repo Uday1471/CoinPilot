@@ -9,6 +9,54 @@ document.addEventListener("DOMContentLoaded", function () {
   const auth = firebase.auth();
   const db = firebase.firestore();
 
+  // Currency settings
+  let currentCurrency = 'INR';
+  let exchangeRate = 83; // Default exchange rate USD to INR
+
+  // Fetch current exchange rate
+  async function fetchExchangeRate() {
+    try {
+      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+      const data = await response.json();
+      exchangeRate = data.rates.INR;
+      updateExchangeRateDisplay();
+    } catch (error) {
+      console.error('Error fetching exchange rate:', error);
+    }
+  }
+
+  // Update exchange rate display
+  function updateExchangeRateDisplay() {
+    const rateDisplay = document.getElementById('exchange-rate');
+    if (rateDisplay) {
+      rateDisplay.textContent = `1 USD = ₹${exchangeRate.toFixed(2)}`;
+    }
+  }
+
+  // Format currency based on selected currency
+  const formatCurrency = (amount) => {
+    const formattedAmount = new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: currentCurrency,
+      maximumFractionDigits: 2
+    }).format(amount);
+    return formattedAmount;
+  };
+
+  // Validate amount against 999 crores limit
+  function validateAmount(amount) {
+    const maxLimit = 9990000000; // 999 crores in INR
+    const amountInINR = currentCurrency === 'USD' ? amount * exchangeRate : amount;
+    
+    if (amountInINR > maxLimit) {
+      return {
+        isValid: false,
+        message: `Amount cannot exceed ${formatCurrency(maxLimit)}`
+      };
+    }
+    return { isValid: true };
+  }
+
   // DOM elements
   const elements = {
     userName: document.getElementById("user-name"),
@@ -36,15 +84,26 @@ document.addEventListener("DOMContentLoaded", function () {
     latestDate: document.getElementById("latest-date"),
     balanceChart: document.getElementById("balance-chart"),
     lowBalanceAlert: document.getElementById("low-balance-alert"),
+    currencySelect: document.getElementById("currency-select"),
   };
+
+  // Initialize currency selector
+  if (elements.currencySelect) {
+    elements.currencySelect.addEventListener('change', (e) => {
+      currentCurrency = e.target.value;
+      loadUserData(currentUser.uid);
+      updateBalanceChart(currentUser.uid);
+    });
+  }
+
+  // Fetch exchange rate on load
+  fetchExchangeRate();
 
   let currentUser = null;
   let userData = {
     currentBalance: 0,
     monthlyIncome: 0,
   };
-
-  const formatCurrency = (amount) => `$${amount.toFixed(2)}`;
 
   const showIncomeModal = () => {
     elements.newMonthlyIncomeInput.value = userData.monthlyIncome || "";
@@ -206,6 +265,13 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
+    // Validate amount against limit
+    const validation = validateAmount(amount);
+    if (!validation.isValid) {
+      alert(validation.message);
+      return;
+    }
+
     try {
       const userId = currentUser.uid;
       const userRef = db.collection("users").doc(userId);
@@ -220,6 +286,7 @@ document.addEventListener("DOMContentLoaded", function () {
         date: firebase.firestore.Timestamp.fromDate(transactionDate),
         type: type,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        currency: currentCurrency
       });
 
       const newBalance =

@@ -13,6 +13,13 @@
     <div class="dashboard-container">
       <header class="dashboard-header">
         <img src="logo.png" alt="Logo" class="logo" />
+        <div class="currency-selector">
+          <select id="currency-select">
+            <option value="INR">₹ INR</option>
+            <option value="USD">$ USD</option>
+          </select>
+          <div id="exchange-rate" class="exchange-rate"></div>
+        </div>
         <div class="user-info">
           <i class="fas fa-user-circle"></i>
           <span id="user-name">User</span>
