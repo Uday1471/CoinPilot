@@ -1,0 +1,385 @@
+/* log.css */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+h1 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+#logout-btn {
+  background-color: #f44336; /* Red color for logout */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+  font-size: 1em; /* Adjust font size as needed */
+}
+
+#logout-btn:hover {
+  background-color: #d32f2f;
+}
+
+.filter-tabs {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.filter-tab {
+  padding: 10px 20px;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.filter-tab.active {
+  background: #4caf50;
+  color: white;
+}
+
+.filter-tab:hover {
+  background: #d0d0d0;
+}
+
+.filter-tab.active:hover {
+  background: #3e8e41;
+}
+
+.export-options {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.export-btn {
+  background-color: #007bff; /* Blue color for export buttons */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+  font-size: 1em; /* Adjust font size as needed */
+}
+
+.export-btn:hover {
+  background-color: #0056b3;
+}
+
+#transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#transactions-table th,
+#transactions-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+#transactions-table th {
+  background-color: #4caf50;
+  color: white;
+  font-weight: 500;
+}
+
+#transactions-table tr:last-child td {
+  border-bottom: none;
+}
+
+.transaction-summary {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.transaction-summary div {
+  text-align: center;
+}
+
+.transaction-summary span:first-child {
+  font-weight: bold;
+}
+
+.income {
+  color: #2e7d32;
+}
+
+.expense {
+  color: #d32f2f;
+}
+
+.positive {
+  color: #2e7d32;
+}
+
+.negative {
+  color: #d32f2f;
+}
+
+#back-to-dashboard {
+  display: block;
+  width: fit-content;
+  padding: 10px 20px;
+  background-color: #64b5f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  margin-top: 20px;
+  transition: background-color 0.3s;
+  font-size: 1em; /* Adjust font size as needed */
+}
+
+#back-to-dashboard:hover {
+  background-color: #1e88e5;
+}
+
+/* Modal Styles */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+  background-color: #1e1e2f;
+  color: #ffffff;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+  border-radius: 8px;
+  position: relative;
+}
+
+.close-modal-btn {
+  color: #aaa;
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close-modal-btn:hover,
+.close-modal-btn:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-body {
+  margin-top: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input[type="date"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancel-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+  font-size: 1em; /* Adjust font size as needed */
+}
+
+.cancel-btn:hover {
+  background-color: #d32f2f;
+}
+/* Dark Theme Variables */
+[data-theme="dark"] {
+  --primary: #5d78ff;
+  --primary-light: #5a8cff;
+  --secondary: #4a3fe0;
+  --success: #4cc9f0;
+  --danger: #ff3d7f;
+  --warning: #ffa94d;
+  --light: #2d3748;
+  --dark: #f8f9fa;
+  --gray: #718096;
+  --white: #1a202c;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] body {
+  background-color: #121826;
+  color: #f0f0f0;
+}
+
+[data-theme="dark"] .container {
+  background-color: var(--white);
+  color: var(--dark);
+}
+
+[data-theme="dark"] h1 {
+  color: white; /* Added dark theme for header */
+}
+
+[data-theme="dark"] .filter-tabs {
+  background-color: var(--white);
+}
+
+[data-theme="dark"] .filter-tab {
+  background-color: #2d3748;
+  color: #f0f0f0;
+}
+
+[data-theme="dark"] .filter-tab.active {
+  background-color: var(--primary);
+}
+
+[data-theme="dark"] #transactions-table {
+  background-color: var(--white);
+  color: var(--dark);
+}
+
+[data-theme="dark"] #transactions-table th {
+  background-color: var(--primary);
+}
+
+[data-theme="dark"] #transactions-table tr {
+  border-bottom-color: #4a5568;
+}
+
+[data-theme="dark"] #transactions-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .btn {
+  background-color: #2d3748;
+  color: #f0f0f0;
+}
+
+[data-theme="dark"] .btn:hover {
+  background-color: var(--primary);
+}
+
+[data-theme="dark"] .transaction-summary {
+  background-color: var(--white);
+  color: var(--dark);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  background: none;
+  border: none;
+  color: var(--dark);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-right: 1rem;
+}
+
+.theme-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .theme-toggle {
+  color: var(--dark);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Header layout */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--gray);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+}
+.logo {
+  height: 50px; /* Adjust the height as needed */
+  margin-right: 1rem; /* Add some spacing to the right of the logo */
+}

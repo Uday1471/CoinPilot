@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transaction Log</title>
+    <link rel="stylesheet" href="log.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <img src="logo.png" alt="Logo" class="logo" />
+        <div class="header-left">
+          <h1 id="log-user-name"></h1>
+        </div>
+        <div class="header-right">
+          <button
+            id="theme-toggle"
+            class="theme-toggle"
+            aria-label="Toggle dark mode">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button id="logout-btn" class="btn">Logout</button>
+        </div>
+      </header>
+
+      <div class="filter-tabs">
+        <button id="filter-all" class="filter-tab active">
+          All Transactions
+        </button>
+        <button id="filter-income" class="filter-tab">Income</button>
+        <button id="filter-expense" class="filter-tab">Expenses</button>
+      </div>
+
+      <div class="export-options">
+        <button id="export-pdf-btn" class="btn export-btn">
+          Export as PDF
+        </button>
+      </div>
+
+      <div class="transaction-summary">
+        <div>
+          <span>Total Income: </span>
+          <span id="total-income">$39650.00</span>
+        </div>
+        <div>
+          <span>Total Expenses: </span>
+          <span id="total-expenses">$42190.00</span>
+        </div>
+        <div>
+          <span>Net Change: </span>
+          <span id="net-change">$-2540.00</span>
+        </div>
+      </div>
+
+      <table id="transactions-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <a href="dashboard.html" id="back-to-dashboard" class="btn"
+        >Back to Dashboard</a
+      >
+    </div>
+
+    <div id="export-date-modal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close-modal-btn">&times;</span>
+        <h2>Export as PDF - Select Date Range</h2>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="pdf-start-date">Start Date:</label>
+            <input type="date" id="pdf-start-date" />
+          </div>
+          <div class="form-group">
+            <label for="pdf-end-date">End Date:</label>
+            <input type="date" id="pdf-end-date" />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button id="export-pdf-with-date-btn" class="btn export-btn">
+            Export PDF
+          </button>
+          <button id="cancel-pdf-export-btn" class="btn cancel-btn">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="log.js"></script>
+  </body>
+</html>
