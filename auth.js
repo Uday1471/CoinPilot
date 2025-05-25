@@ -222,7 +222,8 @@ document.addEventListener("DOMContentLoaded", function () {
       "auth/user-not-found": "No account found with this email",
       "auth/wrong-password": "Incorrect password",
     };
-    showError(form, errorMap[error.code] || error.message);
+    const userMessage = errorMap[error.code] || "Wrong credentials";
+    showError(form, userMessage);
   }
 
   function showError(form, message) {
