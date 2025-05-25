@@ -48,13 +48,15 @@ document.addEventListener("DOMContentLoaded", function () {
   // Format currency based on selected currency and apply conversion
   const formatCurrency = (amountInBaseCurrency) => {
     let amountToDisplay = amountInBaseCurrency;
-    if (currentCurrency === 'USD' && exchangeRate > 0) {
+    // Check if the selected currency is USD and the exchange rate is valid before converting
+    if (currentCurrency === 'USD' && typeof exchangeRate === 'number' && exchangeRate > 0) {
       amountToDisplay = amountInBaseCurrency / exchangeRate;
     }
-    const formattedAmount = new Intl.NumberFormat('en-IN', {
+    // Use Intl.NumberFormat for localized currency formatting
+    const formattedAmount = new Intl.NumberFormat('en-IN', { // Using en-IN locale for formatting consistency
       style: 'currency',
-      currency: currentCurrency,
-      maximumFractionDigits: 2
+      currency: currentCurrency, // Use the selected currency symbol
+      maximumFractionDigits: 2 // Ensure consistent decimal places
     }).format(amountToDisplay);
     return formattedAmount;
   };
@@ -314,14 +316,17 @@ document.addEventListener("DOMContentLoaded", function () {
     ); // Export with date range
   };
 
-  auth.onAuthStateChanged((user) => {
+  auth.onAuthStateChanged(async (user) => {
     if (user) {
       console.log("User authenticated:", user.uid);
       currentUser = user;
       elements.userName.textContent =
         user.displayName || user.email.split("@")[0];
+
+      await fetchExchangeRate();
+
       loadTransactions(user.uid, currentFilter);
-      initEventListeners(); // ENSURE THIS IS UNCOMMENTED
+      initEventListeners();
     } else {
       console.log("No user signed in, redirecting...");
       window.location.href = "index.html";
