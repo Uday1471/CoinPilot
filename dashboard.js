@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const db = firebase.firestore();
 
   // Currency settings
-  let currentCurrency = 'INR';
+  let currentCurrency = localStorage.getItem('selectedCurrency') || 'INR'; // Load currency from localStorage, default to INR
   let exchangeRate = 83; // Default exchange rate USD to INR
 
   // Fetch current exchange rate
@@ -95,8 +95,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Initialize currency selector
   if (elements.currencySelect) {
+    // Set the dropdown value to the loaded currency preference
+    elements.currencySelect.value = currentCurrency;
+
     elements.currencySelect.addEventListener('change', (e) => {
       currentCurrency = e.target.value;
+      // Save currency preference to localStorage
+      localStorage.setItem('selectedCurrency', currentCurrency);
       loadUserData(currentUser.uid);
       updateBalanceChart(currentUser.uid);
     });
